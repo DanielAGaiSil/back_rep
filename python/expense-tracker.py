@@ -5,6 +5,15 @@ class ExpenseManager:
     def __init__(self, root):
         self.root = root
         self.root.title("Expense Categorizer")
+        self.root.geometry("600x450")
+
+        self.root.grid_rowconfigure(0, weight=1)
+        self.root.grid_rowconfigure(1, weight=1)
+        self.root.grid_rowconfigure(2, weight=1)
+        self.root.grid_rowconfigure(3, weight=1)
+        self.root.grid_rowconfigure(4, weight=1)
+        self.root.grid_columnconfigure(0, weight=1)
+        self.root.grid_columnconfigure(1, weight=1)
 
         self.necessary_expenses = {}
         self.optional_expenses = {}

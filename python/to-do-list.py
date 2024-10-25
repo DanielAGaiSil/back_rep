@@ -1,77 +1,105 @@
 import tkinter as tk
 from tkinter import messagebox, simpledialog
+import json
+import os
 
-class ExpenseManager:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Expense Categorizer")
-        self.root.geometry("600x450")
+class Task:
+    def __init__(self, description, completed=False):
+        self.description = description
+        self.completed = completed
 
-        self.root.grid_rowconfigure(0, weight=1)
-        self.root.grid_rowconfigure(1, weight=1)
-        self.root.grid_rowconfigure(2, weight=1)
-        self.root.grid_rowconfigure(3, weight=1)
-        self.root.grid_rowconfigure(4, weight=1)
-        self.root.grid_columnconfigure(0, weight=1)
-        self.root.grid_columnconfigure(1, weight=1)
-        self.necessary_expenses = {}
-        self.optional_expenses = {}
+    def to_dict(self):
+        return {"description": self.description, "completed": self.completed}
 
-        self.label_expense = tk.Label(root, text="Enter Expense Name:")
-        self.label_expense.grid(row=0, column=0)
-        self.entry_expense = tk.Entry(root)
-        self.entry_expense.grid(row=0, column=1)
+    @classmethod
+    def from_dict(cls, data):
+        return cls(data["description"], data["completed"])
 
-        self.label_amount = tk.Label(root, text="Enter Expense Amount:")
-        self.label_amount.grid(row=1, column=0)
-        self.entry_amount = tk.Entry(root)
-        self.entry_amount.grid(row=1, column=1)
+class TodoList:
+    def __init__(self):
+        self.tasks = []
+        self.load_tasks()
 
-        self.category_var = tk.StringVar(value="necessary")
-        self.radio_necessary = tk.Radiobutton(root, text="Necessary", variable=self.category_var, value="necessary")
-        self.radio_necessary.grid(row=2, column=0)
-        self.radio_optional = tk.Radiobutton(root, text="Optional", variable=self.category_var, value="optional")
-        self.radio_optional.grid(row=2, column=1)
+    def add_task(self, description):
+        self.tasks.append(Task(description))
+        self.save_tasks()
 
-        self.submit_button = tk.Button(root, text="Submit Expense", command=self.submit_expense)
-        self.submit_button.grid(row=3, column=0, columnspan=2)
+    def mark_completed(self, task_index):
+        if 0 <= task_index < len(self.tasks):
+            self.tasks[task_index].completed = True
+            self.save_tasks()
 
-        self.show_button = tk.Button(root, text="Show Categorized Expenses", command=self.show_expenses)
-        self.show_button.grid(row=4, column=0, columnspan=2)
+    def delete_task(self, task_index):
+        if 0 <= task_index < len(self.tasks):
+            del self.tasks[task_index]
+            self.save_tasks()
 
-    def submit_expense(self):
+    def save_tasks(self):
+        with open("tasks.json", "w") as f:
+            json.dump([task.to_dict() for task in self.tasks], f)
 
-        expense_name = self.entry_expense.get()
-        expense_amount = self.entry_amount.get()
-        category = self.category_var.get()
+    def load_tasks(self):
+        if os.path.exists("tasks.json"):
+            with open("tasks.json", "r") as f:
+                data = json.load(f)
+                self.tasks = [Task.from_dict(task_data) for task_data in data]
 
-        try:
-            expense_amount = float(expense_amount)
-        except ValueError:
-            messagebox.showerror("Invalid Input", "Please enter a valid number for the expense amount.")
-            return
+class TodoListGUI:
+    def __init__(self, master):
+        self.master = master
+        self.todo_list = TodoList()
 
-        if category == 'necessary':
-            self.necessary_expenses[expense_name] = expense_amount
-        elif category == 'optional':
-            self.optional_expenses[expense_name] = expense_amount
+        master.title("To-Do List Application")
+        master.geometry("400x300")
 
-        self.entry_expense.delete(0, tk.END)
-        self.entry_amount.delete(0, tk.END)
+        self.task_listbox = tk.Listbox(master, width=50)
+        self.task_listbox.pack(pady=10)
 
-    def show_expenses(self):
+        self.add_button = tk.Button(master, text="Add Task", command=self.add_task)
+        self.add_button.pack()
 
-        necessary_message = "Necessary Expenses:\n"
-        for expense, amount in self.necessary_expenses.items():
-            necessary_message += f"{expense}: ${amount:.2f}\n"
+        self.mark_completed_button = tk.Button(master, text="Mark as Completed", command=self.mark_completed)
+        self.mark_completed_button.pack()
 
-        optional_message = "Optional Expenses:\n"
-        for expense, amount in self.optional_expenses.items():
-            optional_message += f"{expense}: ${amount:.2f}\n"
+        self.delete_button = tk.Button(master, text="Delete Task", command=self.delete_task)
+        self.delete_button.pack()
 
-        full_message = necessary_message + "\n" + optional_message
-        messagebox.showinfo("Categorized Expenses", full_message)
+        self.refresh_task_list()
 
-root = tk.Tk()
-app = ExpenseManager(root)
-root.mainloop()
+    def add_task(self):
+        description = simpledialog.askstring("Add Task", "Enter task description:")
+        if description:
+            self.todo_list.add_task(description)
+            self.refresh_task_list()
+
+    def mark_completed(self):
+        selection = self.task_listbox.curselection()
+        if selection:
+            index = selection[0]
+            self.todo_list.mark_completed(index)
+            self.refresh_task_list()
+        else:
+            messagebox.showwarning("Warning", "Please select a task to mark as completed.")
+
+    def delete_task(self):
+        selection = self.task_listbox.curselection()
+        if selection:
+            index = selection[0]
+            self.todo_list.delete_task(index)
+            self.refresh_task_list()
+        else:
+            messagebox.showwarning("Warning", "Please select a task to delete.")
+
+    def refresh_task_list(self):
+        self.task_listbox.delete(0, tk.END)
+        for task in self.todo_list.tasks:
+            status = "✓" if task.completed else " "
+            self.task_listbox.insert(tk.END, f"[{status}] {task.description}")
+
+def main():
+    root = tk.Tk()
+    todo_list_gui = TodoListGUI(root)
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
