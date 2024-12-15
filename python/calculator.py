@@ -1,4 +1,4 @@
-import tkinter as tk
+import tkinter as tk #For the GUI
 
 #The space for calculations
 calculation = ""

@@ -1,9 +1,9 @@
-import tkinter as tk
-import requests
+import tkinter as tk #Used for the GUI
+import requests #Used to get the API contents
 #Had to learn this in order for the quote API to work, basically bypasses the unsafe warning
 #Importing the url library in order for the bypass to work
 import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) #The bypass itself
 
 def quote_generator():
     global quote, author
@@ -50,10 +50,10 @@ def quote_remover():
     author_space.delete("1.0", tk.END)
 
 def quote_author():
-    # Displays the author's name in the author_space text box
-    # Clears any previous text
+    #Displays the author's name in the author_space text box
+    #Clears any previous text
     author_space.delete("1.0", tk.END)
-    # Inserts the author's name
+    #Inserts the author's name
     author_space.insert(tk.END, author)
 
 window = tk.Tk()

@@ -1,4 +1,4 @@
-#concatenating strings
+#Concatenating strings
 #suppose we want to print a string that says "please do ____ "
 #this ="that" #whatever you will do
 #print(f"please do {this}")
