@@ -87,7 +87,7 @@ btn_open = tk.Button(window, text = "(", command = lambda: add_to_calculation("(
 btn_open.grid(row = 5, column = 1)
 btn_close = tk.Button(window, text = ")", command = lambda: add_to_calculation(")"), width= 5, font = ("Arial", 14))
 btn_close.grid(row = 5, column = 3)
-#Removed lambda since we don't take any parameter, no () since we don't want to call, we want to pass it
+#Removed lambda since we don't take any parameter, no () since we don't want to call the function, we want to pass it
 btn_equal = tk.Button(window, text = "=", command = evaluate_calculation, width= 11, font = ("Arial", 14))
 btn_equal.grid(row = 6, column = 3, columnspan = 2)
 btn_clear = tk.Button(window, text = "C", command = clear_field, width= 11, font = ("Arial", 14))
